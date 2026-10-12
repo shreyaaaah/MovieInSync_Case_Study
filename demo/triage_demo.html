@@ -1,0 +1,154 @@
+<title>Review Triage Demo</title>
+<style>
+/* Layout: one working column. Paste box on the left, tagged results on the right; stacks on phones. */
+:root{
+  --bg:#F3F5F4; --surface:#FFFFFF; --ink:#1B2623; --muted:#5A6A65; --line:#D5DCD9;
+  --accent:#0E6B5C; --accent-ink:#FFFFFF; --warn:#9A4B00; --warn-bg:#FCEBD6; --ok-bg:#DDF0EA;
+  --display:'Fraunces',Georgia,serif; --body:'Public Sans',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121A18; --surface:#1B2623; --ink:#E6EEEB; --muted:#9BADA7; --line:#32423D;
+  --accent:#4CC3AB; --accent-ink:#0B1411; --warn:#F0B070; --warn-bg:#3A2A18; --ok-bg:#1C3A33; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121A18; --surface:#1B2623; --ink:#E6EEEB; --muted:#9BADA7; --line:#32423D;
+  --accent:#4CC3AB; --accent-ink:#0B1411; --warn:#F0B070; --warn-bg:#3A2A18; --ok-bg:#1C3A33; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:max(16px,4vw);padding-block:32px 56px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1{font-family:var(--display);font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:0;text-wrap:balance;font-weight:700}
+.lede{color:var(--muted);max-width:68ch;margin:8px 0 0}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+label,.cap{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+textarea{width:100%;min-height:360px;resize:vertical;font-family:var(--mono);font-size:13px;line-height:1.5;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;padding:9px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.stats{display:flex;gap:20px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.stat b{font-family:var(--display);font-size:28px;display:block;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(120px,210px) 1fr 28px;gap:10px;align-items:center;font-size:14px}
+.track{background:var(--bg);border-radius:4px;height:14px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;background:var(--accent)}
+.fill.ops{background:var(--warn)}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--ok-bg);color:var(--ink);white-space:nowrap}
+.pill.ops{background:var(--warn-bg);color:var(--warn)}
+.pill.skip{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.stub{color:var(--muted);font-size:13px;margin-top:4px}
+.foot{font-size:13px;color:var(--muted);max-width:80ch}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=JetBrains+Mono&family=Public+Sans:wght@400;600&display=swap">
+
+<div class="wrap">
+  <header>
+    <h1>Review triage for the MoveInSync employee app</h1>
+    <p class="lede">Paste app reviews, one per line, and the rules tag each one by journey stage and failure type, skip praise, and draft the QA test to run first. This is the same rule set as <code>review_triage.py</code> in the case study repo.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel">
+      <label for="input">Reviews (stars | text)</label>
+      <textarea id="input" spellcheck="false"></textarea>
+      <div class="row">
+        <button id="run" type="button">Tag reviews</button>
+        <button id="reset" class="ghost" type="button">Reload sample</button>
+      </div>
+      <p class="hint">Prefilled with the 13 Android reviews (paraphrased) from public pages. Leave the stars blank if unknown. 4 and 5 star reviews are skipped as praise.</p>
+    </section>
+
+    <section class="panel" aria-live="polite">
+      <div class="stats" id="stats"></div>
+      <div class="cap">Complaints by stage and failure</div>
+      <div class="bars" id="bars"></div>
+      <div class="cap">Tagged reviews</div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>ID</th><th>Review</th><th>Tag</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <p class="foot">Limits: the rules were written while reading these same 13 reviews, so a match with my manual tags proves nothing yet. Run it on a Play Console export and compare against an analyst's tags on about 100 reviews before trusting counts. Operations items (routing, vendor) are routed to the transport desk, not the app backlog. Shreya S, reg. no. 12320371.</p>
+</div>
+
+<script>
+var RULES=[
+  ["Onboarding","login OTP not received",/otp (never )?arrives? at login|cannot complete verification/],
+  ["Booking","booking state unclear",/thought a cab was booked|trip not booked|booking .*(two|2) step/],
+  ["Pickup","no-show surprise",/no show|check-in/],
+  ["Live trip","tracking / ETA inaccurate",/\bgps\b|tracking|pickup and drop times/],
+  ["Boarding","OTP gated or offline",/seat-belt|network call/],
+  ["App stability","crash",/crash/],
+  ["Operations","routing or vendor",/routing|vendor|transport service|pickup location assigned/]
+];
+var STUBS={
+  "booking state unclear":"After booking, assert the screen, push notification and backend status all say booked, with no contradicting push.",
+  "tracking / ETA inaccurate":"Replay a GPS trace with gaps. Assert the ETA shows a stale indicator and matches the backend value.",
+  "routing or vendor":"Not an app test. Route to the transport desk with the trip id and a visible owner.",
+  "OTP gated or offline":"Airplane mode with a cached trip. Assert the OTP still shows even if the seat-belt prompt fails.",
+  "login OTP not received":"Simulate an SMS delay. Assert a resend timer and an alternate channel appear.",
+  "no-show surprise":"Cab passes the pickup point. Assert a reminder fires before the no-show cutoff.",
+  "crash":"Check the crash-free session rate for the release before triage."
+};
+var SAMPLE=[
+["P1","","Suggests a reminder to check in after vehicle passes the pickup point; late arrival or missed check-in marks the employee 'No show' as a surprise"],
+["P2","","Recent UI update made shuttle booking two steps instead of one; reviewer thought a cab was booked but was not; also sees every cab for the slot not just their own"],
+["P3","","GPS tracking slow; pickup and drop times often wrong; other riders' live location often not visible"],
+["A1","5","Praise: better than other transport apps"],
+["A2","5","Praise: convenient; all trip details in one place"],
+["A3","5","Praise: helpful for daily life"],
+["A4","5","Praise: cab tracking and route visibility easy; clean interface"],
+["A5","5","Praise: guidance and assistance throughout the trip"],
+["A6","1","App crashes periodically; also angry about transport service quality and responsibility; blames employer/vendor choice"],
+["A7","1","Hostile; pickup location assigned for login shift considered illogical (routing/policy not UI)"],
+["A8","1","Seat-belt verification step annoying and OTP hidden behind it; ads reportedly introduced; app needs a network call each open so fails underground"],
+["A9","1","OTP never arrives at login so cannot complete verification"],
+["A10","1","Trip booked but push notification repeatedly says trip not booked"]
+];
+var input=document.getElementById("input");
+function load(){input.value=SAMPLE.map(function(r){return r[0]+" | "+r[1]+" | "+r[2]}).join("\n")}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function parse(){
+  return input.value.split("\n").map(function(l,i){
+    l=l.trim(); if(!l) return null;
+    var p=l.split("|").map(function(x){return x.trim()});
+    if(p.length>=3) return {id:p[0]||("R"+(i+1)),stars:parseInt(p[1],10),text:p.slice(2).join(" | ")};
+    if(p.length===2) return {id:"R"+(i+1),stars:parseInt(p[0],10),text:p[1]};
+    return {id:"R"+(i+1),stars:NaN,text:p[0]};
+  }).filter(Boolean);
+}
+function run(){
+  var rev=parse(),counts={},neg=0,html="";
+  rev.forEach(function(r){
+    var praise=!isNaN(r.stars)&&r.stars>=4, tags=[];
+    if(!praise){neg++;var t=r.text.toLowerCase();RULES.forEach(function(x){if(x[2].test(t))tags.push(x)});}
+    var cell;
+    if(praise) cell='<span class="pill skip">Praise, skipped</span>';
+    else if(!tags.length) cell='<span class="pill skip">Untagged, needs a human</span>';
+    else cell=tags.map(function(x){
+      var k=x[0]+" / "+x[1]; counts[k]=(counts[k]||0)+1;
+      return '<div><span class="pill'+(x[0]==="Operations"?' ops':'')+'">'+esc(k)+'</span><div class="stub">'+esc(STUBS[x[1]])+'</div></div>';
+    }).join("");
+    html+="<tr><td>"+esc(r.id)+"</td><td>"+esc(r.text)+"</td><td>"+cell+"</td></tr>";
+  });
+  document.getElementById("rows").innerHTML=html;
+  var keys=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]}),max=keys.length?counts[keys[0]]:1;
+  document.getElementById("bars").innerHTML=keys.length?keys.map(function(k){
+    return '<div class="bar"><span>'+esc(k)+'</span><div class="track"><div class="fill'+(k.indexOf("Operations")===0?' ops':'')+'" style="width:'+(counts[k]/max*100)+'%"></div></div><span class="num">'+counts[k]+'</span></div>';
+  }).join(""):'<p class="hint">No complaints tagged yet.</p>';
+  document.getElementById("stats").innerHTML=
+    '<div class="stat"><b>'+rev.length+'</b><span>reviews</span></div><div class="stat"><b>'+neg+'</b><span>complaints</span></div><div class="stat"><b>'+keys.length+'</b><span>failure types</span></div>';
+}
+document.getElementById("run").addEventListener("click",run);
+document.getElementById("reset").addEventListener("click",function(){load();run()});
+load();run();
+</script>

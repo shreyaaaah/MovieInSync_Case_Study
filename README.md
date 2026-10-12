@@ -40,6 +40,9 @@ The seat-belt fallback needs **safety-owner sign-off** before it ships.
 5. **Act.** Draft QA test, ticket and owner.
 6. **Verify.** Check whether that failure falls as a share of new reviews and in internal metrics.
 
+## Live demo
+Paste reviews and see them tagged in the browser (same rules as the script): https://claude.ai/artifact/XzeVZPohvYmyWd7F3YM1C1
+
 ## Run the prototype
 ```bash
 python3 triage/review_triage.py data/reviews_sample.csv triage/tagged.csv triage/report.md
