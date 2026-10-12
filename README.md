@@ -41,7 +41,7 @@ The seat-belt fallback needs **safety-owner sign-off** before it ships.
 6. **Verify.** Check whether that failure falls as a share of new reviews and in internal metrics.
 
 ## Live demo
-Paste reviews and see them tagged in the browser (same rules as the script): https://claude.ai/artifact/XzeVZPohvYmyWd7F3YM1C1
+Paste reviews and see them tagged in the browser (same rules as the script). Source is `demo/index.html`: https://shreyaaaah.github.io/MovieInSync_Case_Study/demo/
 
 ## Run the prototype
 ```bash
