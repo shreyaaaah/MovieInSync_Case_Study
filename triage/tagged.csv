@@ -1,0 +1,14 @@
+id,date,stars,tags,paraphrase
+P1,2026-06-29,,no_show_surprise,Suggests a reminder to check in after vehicle passes the pickup point; late arrival or missed check-in marks the employee 'No show' as a surprise
+P2,2026-07-07,,booking_state_unclear,Recent UI update made shuttle booking two steps instead of one; reviewer thought a cab was booked but was not; also sees every cab for the slot not just their own
+P3,2026-07-01,,tracking_eta_inaccurate,GPS tracking slow; pickup and drop times often wrong; other riders' live location often not visible
+A1,2026-09-24,5,,Praise: better than other transport apps
+A2,2026-10-05,5,,Praise: convenient; all trip details in one place
+A3,2026-10-06,5,,Praise: helpful for daily life
+A4,2026-09-14,5,,Praise: cab tracking and route visibility easy; clean interface
+A5,2026-09-24,5,,Praise: guidance and assistance throughout the trip
+A6,2026-09-18,1,crash;routing_or_vendor,App crashes periodically; also angry about transport service quality and responsibility; blames employer/vendor choice
+A7,2026-09-14,1,routing_or_vendor,Hostile; pickup location assigned for login shift considered illogical (routing/policy not UI)
+A8,2026-09-30,1,otp_gated_or_offline,Seat-belt verification step annoying and OTP hidden behind it; ads reportedly introduced; app needs a network call each open so fails underground
+A9,2026-09-24,1,login_otp_not_received,OTP never arrives at login so cannot complete verification
+A10,2026-10-06,1,booking_state_unclear,Trip booked but push notification repeatedly says trip not booked
